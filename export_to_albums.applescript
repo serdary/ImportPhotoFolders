@@ -9,7 +9,7 @@ on run
 		activate
 		delay 2
 		repeat with thisContainer in containers
-			if name of thisContainer is not in {"Favorites", "Last Import"} then
+			if name of thisContainer is not in {"Favorites", "Last Import", "People"} then
 				copy thisContainer to the end of rootContainers
 			end if
 		end repeat
@@ -18,6 +18,8 @@ on run
 	repeat with aContainer in rootContainers
 		exportPhotosFrom(aContainer, rootFolder)
 	end repeat
+	
+	say "DONE"
 end run
 
 on exportPhotosFrom(aContainer, parentFolder)
@@ -38,10 +40,6 @@ on exportPhotosFrom(aContainer, parentFolder)
 	
 	if (count of subContainers) > 0 then
 		repeat with aSubContainer in subContainers
-			tell application "Photos"
-				#set loc to (location in library for aContainer as text)
-				#log "===========" & loc
-			end tell
 			set nameOfAContainer to name of aContainer
 			exportPhotosFrom(aSubContainer, parentFolder & ":" & nameOfAContainer)
 		end repeat
@@ -51,25 +49,32 @@ end exportPhotosFrom
 on exportPhotos(aContainer, parentFolder)
 	set nameOfAContainer to name of aContainer
 	set fullPath to (parentFolder as text) & ":" & nameOfAContainer
-	log fullPath
 	createFolder(fullPath)
+	
+	log "album being processed: " & nameOfAContainer
+	set thisAlbum to contents of aContainer
+	
+	tell application "Photos"
+		try
+			set thesePhotos to media items of thisAlbum
+		on error errMsg number errorNumber
+			log "errMsg: " & errMsg
+		end try
+		
+		try
+			set fullPathAlias to fullPath as alias
+			export thesePhotos to fullPathAlias with using originals
+		on error errMsg number errorNumber
+			log "errMessage: " & errMsg
+		end try
+	end tell
 end exportPhotos
 
 on createFolder(fullPath)
-	#log "----------------------"
+	set fullFolder to POSIX file (quoted form of POSIX path of fullPath)
+	
 	log fullPath
+	set pathWithColon to fullPath & ":"
 	do shell script "mkdir -p " & quoted form of POSIX path of fullPath
-	
-	#	tell application "Finder"
-	#		if parentFolder is null then
-	#			make new folder named folderPath
-	#		else
-	#			make new folder named folderPath at parentFolder#;
-	#		end if
-	#	end tell
-	
-	#	tell application "Finder"
-	#make new folder named folderName at parentFolder as text
-	#		make new folder at parentFolder with properties {name:folderName}
-	#	end tell
+	do shell script "chmod 777 " & quoted form of POSIX path of fullPath
 end createFolder
