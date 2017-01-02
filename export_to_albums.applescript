@@ -9,7 +9,7 @@ on run
 		activate
 		delay 2
 		repeat with thisContainer in containers
-			if name of thisContainer is not in {"Favorites", "Last Import", "People", "Places", "Videos", "All Photos", "Selfies", "Panoramas", "Slo-mo", "Bursts"} then
+			if name of thisContainer is not in {"Favorites", "Last Import", "People", "Places", "Videos", "All Photos", "Selfies", "Panoramas", "Slo-mo", "Bursts", "Depth Effect"} then
 				copy thisContainer to the end of rootContainers
 			end if
 		end repeat
